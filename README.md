@@ -18,27 +18,21 @@ Me caracteriza un enfoque analítico y riguroso, orientado a extraer informació
  
 ### 🔹 Análisis exploratorio de datos
 Exploración y limpieza de datos como base para un análisis posterior.
-📎 [Ver proyecto](./Analisis-exploratorio-de-datos)
  
 ### 🔹 Criminalidad en Londres
 Análisis de datos de criminalidad aplicando técnicas de exploración de datos.
-📎 [Ver proyecto](./Criminalidad-en-londres)
  
 ### 🔹 Matplotlib y Seaborn
 Visualización de datos utilizando librerías de Python.
-📎 [Ver proyecto](./Matplotlib-y-Seaborn)
  
 ### 🔹 Movilidad laboral
 Estudio de patrones de movilidad laboral.
-📎 [Ver proyecto](./Movilidad-laboral)
- 
+
 ### 🔹 Proyecto econométrico
 Aplicación de modelos econométricos en R.
-📎 [Ver proyecto](./Proyecto-econometrico)
  
 ### 🔹 Clusters con R
 Segmentación de datos mediante técnicas de clustering en R.
-📎 [Ver proyecto](./Clusters-con-R)
  
 ## 🎯 Enfoque de trabajo
  
