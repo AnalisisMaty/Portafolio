@@ -1,0 +1,228 @@
+---
+title: 'INFRORME DE MOVILIDAD URBANA Y GÉNERO'
+
+date: "`r Sys.Date()`"
+
+author: 
+
+ - name: Sebastián Díaz - Dadne Velazques - Vitalia Rosales - Matías Orellana
+
+   affiliation: Universidad de Talca
+
+output:
+
+  rmdformats::readthedown:
+
+    self_contained: false
+
+    thumbnails: true
+
+    lightbox: true
+
+    gallery: true
+
+    highlight: tango
+
+    use_bookdown: true
+---
+
+<style>
+body {
+  text-align: justify;
+}
+</style>
+```{r setup, include=FALSE}
+library(stargazer)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align = "center")
+```
+
+# Introducción
+
+- Este informe analiza los patrones de movilidad urbana en Chile con un enfoque de género, utilizando datos de la Encuesta CASEN 2022. El objetivo principal es determinar si existen diferencias significativas en la frecuencia de viajes semanales al trabajo entre hombres y mujeres, validando la hipótesis de que el género influye en el comportamiento de transporte.
+- La metodología se divide en dos fases: primero, un análisis probabilístico mediante la distribución de Poisson para estimar la ocurrencia de viajes según el sexo de los individuos; y segundo, la estimación de un Modelo Lineal Generalizado (GLM) de la familia Poisson para identificar las variables socioeconómicas que explican esta movilidad.  
+- Los resultados indican que el sexo es un predictor crítico y estadísticamente significativo; manteniendo constantes factores como la edad y la composición del hogar, las mujeres presentan una menor tasa de viajes semanales en comparación con los hombres. Asimismo, el ingreso del hogar mostró una relación negativa con la frecuencia de viajes, sugiriendo dinámicas de optimización del desplazamiento según el nivel socioeconómico. Por el contrario, variables como la presencia de menores de edad o la tenencia de vehículo no resultaron significativas en este modelo. 
+- Estos hallazgos subrayan la importancia de integrar la dimensión de género en la planificación de políticas públicas de transporte y desarrollo urbano.  
+
+# PROBABILIDADES DE OCURRENCIA PARA X VIAJES A LA SEMANA:
+
+Como se indico anteriormente, se procederá a mostrar las probabilidades de ocurrencia para determinados viajes a la semana con un modelo de Possion, tanto para hombres como para mujeres.
+El modelo utilizado para esta sección se expresa como:
+$$P(X = x) = \frac{e^{-\lambda} \cdot \lambda^x}{x!}$$
+Como se aprecía en la ecuación, se requirío de un λ y un x.
+En la ecuación de possion, λ representa la tasa promedio de ocurrencia de un evento en un intervalo determinado, por lo que se calculo un promedio de viajes a la semana tanto para hombres como para mujeres. Obteniendo los siguientes resultados:
+
+- λ(hombres): 5.025
+- λ(mujeres): 4.63
+
+Mientras que la variable X representa el número de viajes semanales analizado escojidos a críterio del grupo. En el que se analizo:
+
+- 3 viajes a la semana
+- 1 a 3 viajes a la semana
+- Más de 6 viajes a la semana
+
+Los resultados se muestrán a continuación:
+```{r calculos, echo=FALSE}
+movilidad <- read.csv("movilidad.csv")
+media_hombres <- mean(movilidad$veces[movilidad$sex == 0], na.rm = TRUE)
+media_mujeres <- mean(movilidad$veces[movilidad$sex == 1], na.rm = TRUE)
+```
+## Probabilidad de que realizen 3 viajes a la semana
+Hombres
+```{r dpois 3, echo=FALSE}
+dpois(3, media_hombres) 
+```
+Mujeres
+```{r dpois 3m, echo=FALSE}
+dpois(3, media_mujeres) #probabilidad de que los hombres realizen 3 viajes a la semana 
+```
+## Probabilidad de que realizen de 1 a 3 viajes a la semana
+Hombres
+```{r dpois 1:3, echo=FALSE}
+sum(dpois(1:3, media_hombres)) #probabilidad de que los hombres realizen de 1 a 3 viajes a la semana 
+```
+Mujeres
+```{r dpois 1:3m, echo=FALSE}
+sum(dpois(1:3, media_mujeres)) #probabilidad de que los hombres realizen de 1 a 3 viajes a la semana 
+```
+## Probabilidad de que realizen más de 6 viajes a la semana
+Hombres
+```{r ppois 6, echo=FALSE}
+ppois(6, media_hombres, FALSE)
+```
+Mujeres
+```{r ppois 6m, echo=FALSE}
+ppois(6, media_mujeres, FALSE)
+```
+
+Se pude apreciar algo muy interesante a la hora de de comparar los resultados.
+
+La probabilidad de viajes a la semana de las mujeres llega a ser hasta 6% mayor a la de los hombres a pesar de tener una media menor. Sin embargo esa diferencia se invierte notablemente cuando se analiza la probabilidad de viajar más de 6 veces a la semana.
+
+Aquí se podría intuir que la **distribución de estas probabilidades** pueden tener una tendencía determinada dependiendo del género de la persona.
+
+Esto último se verá a detalle en la siguiente sección.
+
+# Gráficos de Distribución de probabilidad
+
+Los gráficos de distribución de probabilidad representan la probabilidad teórica de que ocurra cada posible número de viajes ($x$) basándose únicamente en la tasa promedio ($\lambda$) calculada con anterioridad. Esto nos permitirá ver con claridad la distribución de probabilidades para cada genero.
+
+Se uso una estimación ($x$) de 0 a 10 viajes a la semana, y los resultados son los siguientes:
+
+## Distribución de probabilidad de 0 a 10 viajes de hombres
+```{r ploth, echo=FALSE}
+plot(0:10,
+     dpois(x = 0:10, lambda = media_hombres),
+     type = "h",
+     xlab = "Número de viajes",
+     ylab = "Probabilidad",
+     main = "Probabilidad de viajes de hombres",
+     col = "blue")
+points(0:10,
+       dpois(x = 0:10, lambda = media_hombres),
+       pch = 20)
+```
+
+## Distribución de probabilidad de 0 a 10 viajes de mujeres
+```{r plotm, echo=FALSE, fig.width=10, fig.height=6}
+plot(0:10,
+     dpois(x = 0:10, lambda = media_mujeres),
+     type = "h",
+     xlab = "Número de viajes",
+     ylab = "Probabilidad",
+     main = "Probabilidad de viajes de mujeres",
+     col = "red")
+points(0:10,
+       dpois(x = 0:10, lambda = media_mujeres),
+       pch = 20)
+```
+
+Se puede apreciar una clara tendencia para la distribución de probabilidades de cada género. Mintras que los hombres tienen una distribución más inclinada hacia la derecha, las mujeres la tienen hacia la izquierda.
+
+Esto muestra claramente que los hombres tienden a viajar más veces al trabajo que las muejeres, y al mismo tiempo, toman sentido los resultados previamente obtenidos en los que, la probabilidad de viaje de ambos sexos, invertía su tendencia mientras aumentabamos la variable de números de viajes ($x$).
+
+Ahora cabe hacerse una pregunta.¿Cuales son las principales determinantes de estos resultados?¿Cuales pueden ser las variables que más influyen en que la distribución tome estas tendencias?. Estas preguntas se ahondan a profundidad en la siguiente sección.
+
+# Regresión 
+
+La regresión es una de las herramientas más potentes de la estadística aplicada y la econometría. Su objetivo fundamental es modelar la relación entre una variable dependiente ($Y$) y una o más variables explicativas ($X$). 
+
+El punto de partida suele ser el Modelo de Regresión Lineal, que busca trazar la "mejor línea" que atraviese nuestros datos. Es ideal cuando nuestra variable dependiente es continua (como el ingreso, la temperatura o el precio de una vivienda).
+
+Sin embargo, el mundo real no siempre se comporta de forma lineal o continua. Existen casos donde los datos representan eventos que ocurren en un intervalo de tiempo o espacio: aquí es donde entra la Regresión de Poisson.
+
+## Regresión de Possion
+
+La Regresión de Poisson es un modelo probabilístico diseñado específicamente para datos de conteo. Se utiliza cuando la variable dependiente ($Y$) toma valores enteros no negativos ($0, 1, 2, 3...$).
+
+La forma funcional de este modelo asegura que los valores predichos sean siempre positivos, utilizando la función exponencial:
+
+$$E(Y|X) = \lambda = e^{\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_k X_k}$$
+Las variables escogidas para analizar el número de viajes a la semana fueron:
+
+- Edad.
+- Escolaridad.
+- Hijos menos de 5 años.
+- Hijos entre 5 y 14 años.
+- Sexo (usando a las mujeres como referencia).
+- Ingresos del hogar.
+- Presencia de Vehículo en el hogar.
+
+Se aplico la regresión por separado para ambos sexos, con la finalidad de obtener una mayor claridad a la hora de encontrar las diferencias significativas para cada género.
+
+## Resultados
+```{r regresion, echo=FALSE}
+poisson_hombres<- glm(veces ~ edad + esc + n_men5c + n_men15c + ing_hog + factor(vehiculo), family=poisson("log"), data=movilidad[movilidad$sex==0,])
+poisson_mujeres<- glm(veces ~ edad + esc + n_men5c + n_men15c + ing_hog + factor(vehiculo), family=poisson("log"), data=movilidad[movilidad$sex==1,])
+
+stargazer(poisson_hombres, poisson_mujeres, 
+          type = "text",
+          column.labels = c("Hombres", "Mujeres"),
+          covariate.labels = c("Edad", "Escolaridad", "Hijos < 5 años", 
+                               "Hijos 5-14 años", "Ingresos Hogar", "Vehículo"),
+          dep.var.labels = "Viajes semanales al trabajo",
+          keep.stat = "n")
+```
+
+## Variables Significativas
+
+1. Ingresos de horgar:
+- Hombres: Los resultados sugieren que por cada unidad adicional de ingreso, el número de viajes semanales de los hombres disminuye en aproximadamente un 1%.
+
+- Mujeres: El efecto es más fuerte y significativo, indicando que por cada unidad adicional de ingreso reduce la tasa en un 1,3%. Esto podría indicar que en hogares de mayor ingresos, las mujeres tienen mayor acceso a flexibilidad o alternativas como el teletrabajo.
+
+2. Escolaridad (Solo hombres):
+- Con el mismo nivel de significancia que tuvieron en el ingreso, para los hombres entre mayor sea su nivel educativo, sus viajes semanales se reducen en un 0,6%.
+
+
+3. Constantes
+
+Las constantes son las variables más significativas, y representan un punto de partida para cuando las demás variables son 0.
+
+- Hombres (1.729): El número esperado de viajes base es $e^{1.729} \approx 5.6$ viajes.
+- Mujeres (1.504): El número esperado de viajes base es $e^{1.504} \approx 4.5$ viajes.
+
+Esto confírmaria nuestras observaciones previas, en la que los hombres ya parten con una base de viajes semanales mayor que el de las mujeres. 
+
+Las constantes representan los logaritmos de las tasas promedio ($\lambda$) que dan forma a los gráficos de distribución previamente obtenidos.
+
+## Variables no significativas
+
+Es muy interesante notar que variables que por lógica uno creería que deberían afectar, aquí no muestran evidencia estadística.
+
+- Hijos: Los resultados de la regresión suguieren que el viaje al trabajo es inelástico al cuidado de hijos. Independiente de si hay hijos o no, el trabajador/a debe cumplir con su jornada.
+
+- Vehículo: Que no tenga significancia es un hallazgo contundente. Esto implicaría que las personas que no tienen auto viajan con la misma frecuencia que quienes sí lo tienen. Esto puede indicar que la necesidad de viajar está impuesta por el contrato de trabajo, no por la facilidad de tener un auto en el estacionamiento.
+
+- Edad: No importa si el trabajador tiene 25 o 50 años; si está empleado, la tasa de viajes semanales se mantiene estable. No observamos un efecto de "desgaste" o de "consolidación" que altere la cantidad de veces que se asiste al lugar de trabajo.
+
+# Conclusión
+
+A través de la aplicación de modelos de conteo, hemos logrado transformar datos brutos en evidencia estadística sólida que describe cómo hombres y mujeres habitan y se desplazan en la ciudad.
+
+Los resultados de este informe subrayan que la planificación urbana y las políticas de transporte público no pueden seguir diseñándose bajo una lógica de "usuario promedio" neutral. 
+
+La asimetría en las constantes y en las distribuciones de probabilidad demuestra que las mujeres enfrentan una realidad de movilidad más restringida y concentrada.
+
+Por lo tanto, para avanzar hacia ciudades más equitativas, es imperativo que las autoridades en Chile integren la perspectiva de género en la gestión del transporte.
+
+La movilidad es una herramienta de acceso a oportunidades, y que hoy, esa herramienta no está siendo distribuida de manera equitativa entre hombres y mujeres.
